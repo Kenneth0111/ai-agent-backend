@@ -26,9 +26,9 @@ public class WebSearchTool {
     @Tool(description = "Search the web for information using a search query, covering both Google and Baidu engines")
     public String searchWeb(@ToolParam(description = "The search query") String query) {
         StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append("=== Google Results ===%n%n".formatted());
+        stringBuilder.append("### Google 搜索结果\n\n");
         stringBuilder.append(doSearch(query, "google"));
-        stringBuilder.append("=== Baidu Results ===%n%n".formatted());
+        stringBuilder.append("### 百度搜索结果\n\n");
         stringBuilder.append(doSearch(query, "baidu"));
         return stringBuilder.toString();
     }
@@ -44,22 +44,30 @@ public class WebSearchTool {
             JSONObject jsonObject = JSONUtil.parseObj(response);
             JSONArray organicResults = jsonObject.getJSONArray("organic_results");
             if (organicResults == null || organicResults.isEmpty()) {
-                return "No results found.%n%n".formatted();
+                return "暂无搜索结果。\n\n";
             }
 
             int limit = Math.min(5, organicResults.size());
             StringBuilder sb = new StringBuilder();
             for (int i = 0; i < limit; i++) {
                 JSONObject result = organicResults.getJSONObject(i);
-                sb.append("Result %d:%nTitle: %s%nLink: %s%nSnippet: %s%n%n".formatted(
-                        i + 1,
-                        result.getStr("title"),
-                        result.getStr("link"),
-                        result.getStr("snippet")));
+                String title = result.getStr("title", "无标题");
+                String link = result.getStr("link", "");
+                String snippet = result.getStr("snippet", "");
+                String thumbnail = result.getStr("thumbnail", "");
+
+                sb.append("**%d. [%s](%s)**\n".formatted(i + 1, title, link));
+                if (!snippet.isEmpty()) {
+                    sb.append("> %s\n".formatted(snippet));
+                }
+                if (!thumbnail.isEmpty()) {
+                    sb.append("\n![%s](%s)\n".formatted(title, thumbnail));
+                }
+                sb.append("\n");
             }
             return sb.toString();
         } catch (Exception e) {
-            return "Search failed: %s%n%n".formatted(e.getMessage());
+            return "搜索失败：%s\n\n".formatted(e.getMessage());
         }
     }
 }

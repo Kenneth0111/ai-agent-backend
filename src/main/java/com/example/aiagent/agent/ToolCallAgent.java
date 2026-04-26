@@ -4,7 +4,7 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.text.CharSequenceUtil;
 import com.alibaba.cloud.ai.dashscope.chat.DashScopeChatOptions;
 import com.example.aiagent.agent.model.AgentState;
-import dev.langchain4j.data.message.UserMessage;
+import org.springframework.ai.chat.messages.UserMessage;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.extern.slf4j.Slf4j;
@@ -46,7 +46,7 @@ public class ToolCallAgent extends ReActAgent {
         this.availableTools = availableTools;
         this.toolCallingManager = ToolCallingManager.builder().build();
         this.chatOptions = DashScopeChatOptions.builder()
-                .withProxyToolCalls(true)
+                .withInternalToolExecutionEnabled(false)
                 .build();
     }
 
@@ -60,7 +60,7 @@ public class ToolCallAgent extends ReActAgent {
         // 1.校验提示词，拼接用户提示词
         if (CharSequenceUtil.isNotBlank(getNextStepPrompt())) {
             UserMessage userMessage = new UserMessage(getNextStepPrompt());
-            getMessageList().add((Message) userMessage);
+            getMessageList().add(userMessage);
         }
         // 2.调用 AI 大模型，获取工具调用结果
         List<Message> messageList = getMessageList();
@@ -125,8 +125,8 @@ public class ToolCallAgent extends ReActAgent {
             setState(AgentState.FINISHED);
         }
         String results = toolResponseMessage.getResponses().stream()
-                .map(response -> "工具 " + response.name() + " 返回结果：" + response.responseData())
-                .collect(Collectors.joining("\n"));
+                .map(response -> "#### 工具：" + response.name() + "\n\n" + response.responseData())
+                .collect(Collectors.joining("\n\n---\n\n"));
         log.info(results);
         return results;
     }

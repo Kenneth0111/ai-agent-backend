@@ -70,14 +70,14 @@ public abstract class BaseAgent {
                 log.info("Executing step {}/{}", currentStep, maxSteps);
                 // 单步执行
                 String stepResult = step();
-                String result = "Step" + currentStep + ": " + stepResult;
+                String result = "**Step " + currentStep + "：**\n\n" + stepResult;
                 results.add(result);
             }
             if (currentStep >= maxSteps) {
                 state = AgentState.FINISHED;
-                results.add("Terminated: Reached max steps (" + maxSteps + ")");
+                results.add("**已终止：** 已达到最大步数 (" + maxSteps + ")");
             }
-            return String.join("\n" + results);
+            return String.join("\n\n---\n\n", results);
         } catch (Exception e) {
             state = AgentState.ERROR;
             log.error("Error executing agent", e);
@@ -127,15 +127,15 @@ public abstract class BaseAgent {
                     log.info("Executing step {}/{}", currentStep, maxSteps);
                     // 单步执行
                     String stepResult = step();
-                    String result = "Step" + currentStep + ": " + stepResult;
+                    String result = "**Step " + currentStep + "：**\n\n" + stepResult;
                     results.add(result);
-                    // 输出当前每一步的结果到 SSE
                     sseEmitter.send(result);
                 }
                 if (currentStep >= maxSteps) {
                     state = AgentState.FINISHED;
-                    results.add("Terminated: Reached max steps (" + maxSteps + ")");
-                    sseEmitter.send("Terminated: Reached max steps (" + maxSteps + ")");
+                    String terminateMsg = "**已终止：** 已达到最大步数 (" + maxSteps + ")";
+                    results.add(terminateMsg);
+                    sseEmitter.send(terminateMsg);
                 }
                 // 正常完成
                 sseEmitter.complete();
