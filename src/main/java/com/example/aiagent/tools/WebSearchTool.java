@@ -23,21 +23,19 @@ public class WebSearchTool {
         this.apiKey = apiKey;
     }
 
-    @Tool(description = "Search the web for information using a search query, covering both Google and Baidu engines")
+    @Tool(description = "Search the web for information using Baidu search engine")
     public String searchWeb(@ToolParam(description = "The search query") String query) {
         StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append("### Google 搜索结果\n\n");
-        stringBuilder.append(doSearch(query, "google"));
         stringBuilder.append("### 百度搜索结果\n\n");
-        stringBuilder.append(doSearch(query, "baidu"));
+        stringBuilder.append(doSearch(query));
         return stringBuilder.toString();
     }
 
-    private String doSearch(String query, String engine) {
+    private String doSearch(String query) {
         Map<String, Object> params = new HashMap<>();
         params.put("q", query);
         params.put("api_key", apiKey);
-        params.put("engine", engine);
+        params.put("engine", "baidu");
 
         try {
             String response = HttpUtil.get(SEARCH_API_URL, params);
